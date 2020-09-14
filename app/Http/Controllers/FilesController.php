@@ -27,8 +27,20 @@ class FilesController extends Controller
     public function store(Request $request)
     {
         $url = $request->input('url');
-        Artisan::queue('command:downloadAndImport', ['url' => $url]);
-        return Files::create($request->all);
+        $headers = get_headers($url, 1);
+        $parts = explode("/",$url);
+
+        $file = new Files;
+        $file->size = $headers['Content-Length'];
+        $file->name = end($parts);
+        $file->path = base_path(). '\resources\uploads\\'.end($parts);
+        $file->status = 'DOWNLOADING';
+
+        $file->save();
+
+        Artisan::queue('command:downloadAndImport', ['url' => $url, 'path' => $file->path]);
+        
+        return response()->json(['error' => 0, 'message' => 'Successfully Queued']);
     }
 
     /**

@@ -11,7 +11,7 @@ class downloadAndImport extends Command
      *
      * @var string
      */
-    protected $signature = 'command:downloadAndImport {url}';
+    protected $signature = 'command:downloadAndImport {url} {path}';
 
     /**
      * The console command description.
@@ -30,6 +30,10 @@ class downloadAndImport extends Command
         parent::__construct();
     }
 
+    function headerFunction() {
+
+    }
+
     /**
      * Execute the console command.
      *
@@ -38,8 +42,9 @@ class downloadAndImport extends Command
     public function handle()
     {
         $url = $this->argument('url');
-        $parts = explode("/",$url);
-        $targetFile = fopen( base_path(). '\resources\uploads\\'.end($parts), 'w' );
+        $path = $this->argument('path');
+        
+        $targetFile = fopen( $path, 'w' );
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt( $ch, CURLOPT_NOPROGRESS, false );
