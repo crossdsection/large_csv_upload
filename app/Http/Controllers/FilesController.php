@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Files;
 use Illuminate\Http\Request;
 use Artisan;
+use App\Jobs\DownloadImportZip;
 
 class FilesController extends Controller
 {
@@ -38,7 +39,8 @@ class FilesController extends Controller
 
         $file->save();
 
-        Artisan::queue('command:downloadAndImport', ['url' => $url, 'path' => $file->path]);
+        DownloadImportZip::dispatch($url, $file->path);
+        // Artisan::queue('command:downloadAndImport', ['url' => $url, 'path' => $file->path]);
         
         return response()->json(['error' => 0, 'message' => 'Successfully Queued']);
     }

@@ -43,15 +43,23 @@ class downloadAndImport extends Command
     {
         $url = $this->argument('url');
         $path = $this->argument('path');
-        
+
         $targetFile = fopen( $path, 'w' );
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt( $ch, CURLOPT_NOPROGRESS, false );
         curl_setopt( $ch, CURLOPT_FILE, $targetFile );
         curl_exec( $ch );
-        fclose( $ch );
-
-        return 0;
+        
+         echo "\033======== Start ========\n";
+        // $zip = new ZipArchive;
+        // if ($zip->open($path) === TRUE) {
+        //     $zip->extractTo(base_path(). '\resources\uploads\\');
+        //     $zip->close();
+        //     echo 'ok';
+        // } else {
+        //     echo 'failed';
+        // }
+        // return 0;
     }
 }
