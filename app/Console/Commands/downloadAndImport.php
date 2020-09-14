@@ -50,8 +50,7 @@ class downloadAndImport extends Command
         curl_setopt( $ch, CURLOPT_NOPROGRESS, false );
         curl_setopt( $ch, CURLOPT_FILE, $targetFile );
         curl_exec( $ch );
-        
-         echo "\033======== Start ========\n";
+
         // $zip = new ZipArchive;
         // if ($zip->open($path) === TRUE) {
         //     $zip->extractTo(base_path(). '\resources\uploads\\');
