@@ -70,8 +70,8 @@ class downloadAndImport extends Command
                     $filename = $zip->getNameIndex($i);
                     if (pathinfo($filename, PATHINFO_EXTENSION)=="csv") {
                         $fileinfo = pathinfo($filename);
-                        copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\\'.$filename);
-                        array_push($fileToRead, base_path(). '\resources\uploads\\'.$filename);
+                        copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\newname'.$i.'.csv');
+                        array_push($fileToRead, base_path(). '\resources\uploads\newname'.$i.'.csv');
                         array_push($tableName, $fileinfo['filename']);
                     }
                 } 
@@ -104,7 +104,9 @@ class downloadAndImport extends Command
                                 $table->increments('id');
                                 if (count($tableColumns) > 0) {
                                     foreach ($tableColumns as $field) {
-                                        $table->string($field);
+                                        if( $field != 'id' )  {
+                                            $table->string($field);
+                                        }
                                         // $table->{$field['type']}($field['name']);
                                     }
                                 }
