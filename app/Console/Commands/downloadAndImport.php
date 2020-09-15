@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
 use ZipArchive;
 use Log;
-use SplFileObject;
 
 class downloadAndImport extends Command
 {
@@ -57,39 +59,80 @@ class downloadAndImport extends Command
         curl_exec( $ch );
 
         $fileToRead = array();
+        $tableName = array();
         $zip = new ZipArchive;
         if ($zip->open($path) === TRUE) {
             for($i = 0; $i < $zip->numFiles; $i++) {
-                $filename = $zip->getNameIndex($i);
-                if (pathinfo($filename, PATHINFO_EXTENSION)=="csv"){
-                    $fileinfo = pathinfo($filename);
-                    copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\newname'.$i.'.csv');
-                    array_push($fileToRead, base_path(). '\resources\uploads\newname'.$i.'.csv');
+                try {
+                    if(substr($zip->getNameIndex($i), 0, 9) === "__MACOSX/") {
+                       continue;
+                    }
+                    $filename = $zip->getNameIndex($i);
+                    if (pathinfo($filename, PATHINFO_EXTENSION)=="csv") {
+                        $fileinfo = pathinfo($filename);
+                        copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\\'.$filename);
+                        array_push($fileToRead, base_path(). '\resources\uploads\\'.$filename);
+                        array_push($tableName, $fileinfo['filename']);
+                    }
+                } 
+                catch(Exception $e) {
+                    Log::debug($e);
                 }
-            }   
+            }
+            Log::debug('ok');
             $zip->close();
-            echo 'ok';
         } else {
-            echo 'failed';
+            Log::debug('failed');
         }
 
         for ($i = 0; $i < count($fileToRead); $i++) {
             try {
                 $count = 0;
+                $dataCount = 0;
+                $tableColumns = array();
+
                 $file = fopen($fileToRead[$i], "r");
+                $data = array();
                 while (($line = fgetcsv($file)) !== FALSE) {
-                    // if( $count == 0 ) {
-                    //     $tableColumns = array();
-                    //     foreach ($line as $key => $value) {
-                    //         array_push($tableColumns, VARCHAR(50));
-                    //     }
-                    //     $createTable = "CREATE TABLE newname".$i." (".implode(",", $tableColumns).")";
-                    //     Log::debug($createTable);
-                    // }
+                    if( $count == 0 ) {
+                        foreach ($line as $key => $value) {
+                            array_push($tableColumns, $value);
+                        }
+
+                        if (!Schema::hasTable($tableName[$i])) {
+                            Schema::create($tableName[$i], function (Blueprint $table) use ($tableColumns) {
+                                $table->increments('id');
+                                if (count($tableColumns) > 0) {
+                                    foreach ($tableColumns as $field) {
+                                        $table->string($field);
+                                        // $table->{$field['type']}($field['name']);
+                                    }
+                                }
+                                $table->timestamps();
+                            });
+                        }
+                        Log::debug($tableName[$i]);
+                    } else {
+                        $row = array();
+                        foreach ($line as $key => $value) {
+                           $row[ $tableColumns[$key] ] = $value;
+                        }
+                        array_push($data, $row);
+                        $dataCount++;
+                    }
                     $count++;
+                    if( $dataCount == 1000 ) {
+                        DB::table($tableName[$i])->insert($data);
+                        $data = array();
+                        $dataCount = 0;
+                    }
+                }
+                if( !empty($data) ) {
+                    DB::table($tableName[$i])->insert($data);
                 }
             }
             catch (exception $e) {
+                Log::debug($e);
                 continue;
             }
         }
