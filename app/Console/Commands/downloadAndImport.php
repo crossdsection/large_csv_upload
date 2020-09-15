@@ -44,6 +44,8 @@ class downloadAndImport extends Command
      */
     public function handle()
     {
+        ini_set('auto_detect_line_endings',true);
+
         $url = $this->argument('url');
         $path = $this->argument('path');
 
@@ -74,8 +76,8 @@ class downloadAndImport extends Command
         for ($i = 0; $i < count($fileToRead); $i++) {
             try {
                 $count = 0;
+                $file = fopen($fileToRead[$i], "r");
                 while (($line = fgetcsv($file)) !== FALSE) {
-                    Log::debug($line);
                     // if( $count == 0 ) {
                     //     $tableColumns = array();
                     //     foreach ($line as $key => $value) {
