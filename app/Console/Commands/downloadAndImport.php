@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use ZipArchive;
+use Log;
+use SplFileObject;
 
 class downloadAndImport extends Command
 {
@@ -51,14 +54,42 @@ class downloadAndImport extends Command
         curl_setopt( $ch, CURLOPT_FILE, $targetFile );
         curl_exec( $ch );
 
-        // $zip = new ZipArchive;
-        // if ($zip->open($path) === TRUE) {
-        //     $zip->extractTo(base_path(). '\resources\uploads\\');
-        //     $zip->close();
-        //     echo 'ok';
-        // } else {
-        //     echo 'failed';
-        // }
-        // return 0;
+        $fileToRead = array();
+        $zip = new ZipArchive;
+        if ($zip->open($path) === TRUE) {
+            for($i = 0; $i < $zip->numFiles; $i++) {
+                $filename = $zip->getNameIndex($i);
+                if (pathinfo($filename, PATHINFO_EXTENSION)=="csv"){
+                    $fileinfo = pathinfo($filename);
+                    copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\newname'.$i.'.csv');
+                    array_push($fileToRead, base_path(). '\resources\uploads\newname'.$i.'.csv');
+                }
+            }   
+            $zip->close();
+            echo 'ok';
+        } else {
+            echo 'failed';
+        }
+
+        for ($i = 0; $i < count($fileToRead); $i++) {
+            try {
+                $count = 0;
+                while (($line = fgetcsv($file, 1000)) !== FALSE) {
+                    Log::debug($line);
+                    // if( $count == 0 ) {
+                    //     $tableColumns = array();
+                    //     foreach ($line as $key => $value) {
+                    //         array_push($tableColumns, VARCHAR(50));
+                    //     }
+                    //     $createTable = "CREATE TABLE newname".$i." (".implode(",", $tableColumns).")";
+                    //     Log::debug($createTable);
+                    // }
+                    $count++;
+                }
+            }
+            catch (exception $e) {
+                continue;
+            }
+        }
     }
 }
