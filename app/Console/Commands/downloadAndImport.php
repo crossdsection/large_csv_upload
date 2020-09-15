@@ -74,7 +74,7 @@ class downloadAndImport extends Command
         for ($i = 0; $i < count($fileToRead); $i++) {
             try {
                 $count = 0;
-                while (($line = fgetcsv($file, 1000)) !== FALSE) {
+                while (($line = fgetcsv($file)) !== FALSE) {
                     Log::debug($line);
                     // if( $count == 0 ) {
                     //     $tableColumns = array();
