@@ -72,7 +72,7 @@ class downloadAndImport extends Command
                         $fileinfo = pathinfo($filename);
                         copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\newname'.$i.'.csv');
                         array_push($fileToRead, base_path(). '\resources\uploads\newname'.$i.'.csv');
-                        array_push($tableName, $fileinfo['filename']);
+                        array_push($tableName, $fileinfo['filename'].'s');
                     }
                 } 
                 catch(Exception $e) {

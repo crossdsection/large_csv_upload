@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>Upload</title>
         <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -31,8 +31,8 @@
                        dataType: 'json',
                        contentType: 'application/json',
                        data: JSON.stringify(postData),
-                       success:function(data) {
-                         console.log(data);
+                       success:function(response) {
+                         alert(response.message);
                        }
                     });
                 });
@@ -51,6 +51,8 @@
 
                             <div class="ml-12">
                                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+                                    <!-- http://spatialkeydocs.s3.amazonaws.com/FL_insurance_sample.csv.zip -->
+                                    <!-- http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv -->
                                     <!-- http://spotrix.itarmsg.com/app/task/dev.zip -->
                                     <label for="url">URL</label>
                                     <input type="text" name="url" id="url" style="border:1px solid">
