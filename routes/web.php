@@ -21,3 +21,7 @@ Route::get('/', function () {
 Route::get('/uploadfile', function () {
     return view('uploadfile');
 });
+
+Route::get('/analysis', function () {
+    return view('analysis');
+});

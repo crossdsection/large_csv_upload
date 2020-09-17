@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Tempname1dbController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,3 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::resource('/files','App\Http\Controllers\FilesController');
+
+Route::get('/tempnames/show/',[Tempname1dbController::class, 'show']);
