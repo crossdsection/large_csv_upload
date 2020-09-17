@@ -10,6 +10,7 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
         <script src ="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
         <script src ="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
         <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
@@ -58,9 +59,8 @@
                 $("#fromYear").append(new Option(yearBegin, yearBegin));
                 $("#toYear").append(new Option(yearBegin, yearBegin));
             }
-            // $("#sorting").on('change', changeAPI);
-            // $("#fromYear").on('change', changeAPI);
-            // $("#toYear").on('change', changeAPI);
+
+            $("#submit").on('click', changeAPI);
 
             let initTable = function(tempCondition={}){
                 $("#salesPerYear").DataTable().destroy();
@@ -92,8 +92,44 @@
                         { mData: 'year' }
                     ],
                 });
-            }
+            };
+
+            let initChart = function(){
+                let ctx = document.getElementById('pieChart');
+                ctx.height = 200;
+                $.get('/api/tempnames/getyearwisepercentage/', function(res) {
+                    if( res.error == 0 ) {
+                        let dataSet = [['Year', 'Sales Percentage'], ];
+                        for( const elem of res.data ){
+                            dataSet.push([ 'Year-' + elem.year.toString(), parseFloat(elem.salespercentage)] );
+                        }
+                        google.load("visualization", "1", {packages:["corechart"]});
+                        google.setOnLoadCallback(drawChart);
+                        function drawChart() {
+                            var data = google.visualization.arrayToDataTable(dataSet);
+
+                            var options = {
+                                title: 'Yearly Sales Percentage',
+                                width: '100%',
+                                height: '100%',
+                                pieSliceText: 'percentage',
+                                is3D: true,
+                                chartArea: {
+                                    left: "3%",
+                                    top: "3%",
+                                    height: "94%",
+                                    width: "94%"
+                                }
+                            };
+                            var chart = new google.visualization.PieChart(document.getElementById('pieChart'));
+                            chart.draw(data, options);
+                        }
+                    }
+                });
+            };
+
             initTable();
+            initChart();
         });
     </script>
     <body class="antialiased">
@@ -123,7 +159,7 @@
                                 </select>
                             </div>
                             <div style="width: 100%;margin-top:10px;">
-                                <button type="button" class="btn btn-submit btn-block">Submit</button>
+                                <button id="submit" type="button" class="btn btn-submit btn-block">Submit</button>
                             </div>
                         </div>
                     </div>
@@ -147,7 +183,14 @@
                             </div>
                         </div>
                     </div>
-                    <div id="pieChartDiv" class="container-fluid"></div>
+                    <div class="container-fluid card" style="padding-left: 0px; padding-right: 0px;">
+                        <div class="card-img-top header"></div>
+                        <div class="card-body">
+                            <div id="pieChartDiv">
+                                <div id="pieChart"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

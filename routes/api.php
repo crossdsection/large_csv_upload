@@ -16,3 +16,4 @@ use App\Http\Controllers\Tempname1dbController;
 Route::resource('/files','App\Http\Controllers\FilesController');
 
 Route::get('/tempnames/show/',[Tempname1dbController::class, 'show']);
+Route::get('/tempnames/getyearwisepercentage/',[Tempname1dbController::class, 'getPercentagePerYear']);

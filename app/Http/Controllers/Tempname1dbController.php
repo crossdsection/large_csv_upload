@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tempname1db;
 use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 
 
 class Tempname1dbController extends Controller
@@ -42,6 +42,11 @@ class Tempname1dbController extends Controller
             $qbDB->limit($limit);
         }
         $result = $qbDB->get();
-        return array("data" => $result, 'numberOfPages' => $numberOfPages, 'totalRows' => $totalCount );
+        return array("error" => 0, "data" => $result, 'numberOfPages' => $numberOfPages, 'totalRows' => $totalCount );
+    }
+
+    public function getPercentagePerYear() {
+        $data = DB::table('sale_percentage_per_year')->get();
+        return array("error" => 0, 'data' => $data);
     }
 }
