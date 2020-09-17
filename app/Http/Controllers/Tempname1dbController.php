@@ -18,6 +18,9 @@ class Tempname1dbController extends Controller
     {
         $qbDB = Tempname1db::query();
         $limit = $request->input('limit');
+        if ($request->has('sortby')) {
+            $qbDB->orderBy($request->input('sortby'));
+        }
         if ($request->has('country')) {
             $qbDB->where('country', $request->input('country'));
         }
@@ -27,7 +30,7 @@ class Tempname1dbController extends Controller
         if ($request->has('toYear')) {
             $qbDB->where('year', '<=', $request->input('toYear'));
         }
-        if ($request->has('search')) {
+        if ($request->has('search') && strlen($request->input('search')) > 0 ) {
             $qbDB->where('country', 'like', '%'.$request->input('search').'%');
         }
         $totalCount = $qbDB->count();        
