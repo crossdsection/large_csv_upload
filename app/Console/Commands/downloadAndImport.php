@@ -16,7 +16,7 @@ class downloadAndImport extends Command
      *
      * @var string
      */
-    protected $signature = 'command:downloadAndImport {url} {path}';
+    protected $signature = 'command:downloadAndImport {url} {path} {id}';
 
     /**
      * The console command description.
@@ -50,6 +50,7 @@ class downloadAndImport extends Command
 
         $url = $this->argument('url');
         $path = $this->argument('path');
+        $fileId = $this->argument('id');
 
         $targetFile = fopen( $path, 'w' );
         $ch = curl_init($url);
@@ -70,9 +71,9 @@ class downloadAndImport extends Command
                     $filename = $zip->getNameIndex($i);
                     if (pathinfo($filename, PATHINFO_EXTENSION)=="csv") {
                         $fileinfo = pathinfo($filename);
-                        copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\newname'.$i.'.csv');
-                        array_push($fileToRead, base_path(). '\resources\uploads\newname'.$i.'.csv');
-                        array_push($tableName, $fileinfo['filename'].'s');
+                        copy("zip://".$path."#".$filename, base_path(). '\resources\uploads\tempname'.$i.$fileinfo['filename'].'s.csv');
+                        array_push($fileToRead, base_path(). '\resources\uploads\tempname'.$i.$fileinfo['filename'].'s.csv');
+                        array_push($tableName, 'tempname'.$i.$fileinfo['filename'].'s');
                     }
                 } 
                 catch(Exception $e) {
@@ -85,6 +86,8 @@ class downloadAndImport extends Command
             Log::debug('failed');
         }
 
+        DB::table('files')->where('id', $fileId)->update(['status' => 'PROCESSING']);
+
         for ($i = 0; $i < count($fileToRead); $i++) {
             try {
                 $count = 0;
@@ -96,34 +99,40 @@ class downloadAndImport extends Command
                 while (($line = fgetcsv($file)) !== FALSE) {
                     if( $count == 0 ) {
                         foreach ($line as $key => $value) {
-                            array_push($tableColumns, $value);
+                            array_push($tableColumns, array( 'colName' => $value, 'type' => 'string'));
                         }
-
-                        if (!Schema::hasTable($tableName[$i])) {
-                            Schema::create($tableName[$i], function (Blueprint $table) use ($tableColumns) {
-                                $table->increments('id');
-                                if (count($tableColumns) > 0) {
-                                    foreach ($tableColumns as $field) {
-                                        if( $field != 'id' )  {
-                                            $table->string($field);
-                                        }
-                                        // $table->{$field['type']}($field['name']);
-                                    }
-                                }
-                                $table->timestamps();
-                            });
-                        }
-                        Log::debug($tableName[$i]);
                     } else {
                         $row = array();
                         foreach ($line as $key => $value) {
-                           $row[ $tableColumns[$key] ] = $value;
+                            if( is_numeric($value) ){
+                                $tableColumns[$key]['type'] = 'number';
+                            }
+                            $row[ $tableColumns[$key]['colName'] ] = $value;
                         }
                         array_push($data, $row);
                         $dataCount++;
                     }
                     $count++;
                     if( $dataCount == 1000 ) {
+                         if (!Schema::hasTable($tableName[$i])) {
+                            Schema::create($tableName[$i], function (Blueprint $table) use ($tableColumns) {
+                                $table->increments('id');
+                                if (count($tableColumns) > 0) {
+                                    foreach ($tableColumns as $field) {
+                                        if( $field['colName'] != 'id' )  {
+                                            if( $field['type'] == 'number' ) {
+                                                $table->integer($field['colName']);
+                                            }
+                                            if( $field['type'] == 'string' ) {
+                                                $table->string($field['colName']);   
+                                            }
+                                        }
+                                    }
+                                }
+                                $table->timestamps();
+                            });
+                        }
+                        Log::debug($tableName[$i]);
                         DB::table($tableName[$i])->insert($data);
                         $data = array();
                         $dataCount = 0;
@@ -132,6 +141,7 @@ class downloadAndImport extends Command
                 if( !empty($data) ) {
                     DB::table($tableName[$i])->insert($data);
                 }
+                DB::table('files')->where('id', $fileId)->update(['status' => 'SUCCESS']);
             }
             catch (exception $e) {
                 Log::debug($e);

@@ -38,7 +38,7 @@ class FilesController extends Controller
 
         $file->save();
 
-        Artisan::queue('command:downloadAndImport', ['url' => $url, 'path' => $file->path]);
+        Artisan::queue('command:downloadAndImport', ['url' => $url, 'path' => $file->path, 'id' => $file->id]);
         
         return response()->json(['error' => 0, 'message' => 'Successfully Queued']);
     }
