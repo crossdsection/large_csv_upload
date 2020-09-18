@@ -1,4 +1,4 @@
-This is a project for submission for an Machine Round, I never used Laravel before this -
+This is a project for submission of a Machine Round, I never used Laravel before this -
 
 ## Install 
 
