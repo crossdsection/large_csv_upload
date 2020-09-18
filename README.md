@@ -21,4 +21,4 @@ This is a project for submission of a Machine Round, I never used Laravel before
 		`innodb_locks_unsafe_for_binlog=1`
 
 	- Run SQL query mentioned in file `./queries/viewCreated.sql`
- - Open <domain>/uploadfile
+ - Open <domain>/analysis
