@@ -4,7 +4,8 @@ This is a project for submission of a Machine Round, I never used Laravel before
 
  - `git clone https://github.com/crossdsection/large_csv_upload`
  - `composer install`
- - set MySql credentials in database.php
+ -  php artisan key:generate
+ -  set MySql credentials in database.php
  - `php artisan migrate`
 
 ## Usage 
